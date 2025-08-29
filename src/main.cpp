@@ -5,13 +5,22 @@
 //    Utilise analogReadResolution(12); dans setup() pour t’assurer que la résolution est bien à 12 bits.
 
 #include <Arduino.h>
+#include <TM1637Display.h>
 
-// Définition des broches 
-const int analogPin = 33; // Choisis une broche analogique stable
+// Broches pour le TM1637
+#define CLK 25
+#define DIO 26
 
-// Définition des variables
-const float R1 = 30000.0; // 30kΩ
-const float R2 = 7500.0;  // 7.5kΩ
+TM1637Display display(CLK, DIO);
+
+// Broche analogique
+const int analogPin = 33;
+
+// Résistances du pont diviseur
+const float R1 = 30000.0;
+const float R2 = 7500.0;
+
+// Variables
 float tension_mesure = 0.00;
 int rawValue = 0;
 float tension_moteur = 0.00;
@@ -23,21 +32,37 @@ float corrigerTension(float tension_lue) {
 void setup() {
   Serial.begin(115200);
   analogReadResolution(12);
+  display.setBrightness(7); // Luminosité max (0 à 7)
 }
 
 void loop() {
   rawValue = analogRead(analogPin);
-  tension_mesure = (rawValue / 4095.0) * 3.3; // Conversion en tension réelle
-  tension_moteur = tension_mesure * ((R1 + R2) / R2);    // Recalcul de la tension d’entrée
+  tension_mesure = (rawValue / 4095.0) * 3.3;
+  tension_moteur = tension_mesure * ((R1 + R2) / R2);
   tension_moteur = corrigerTension(tension_moteur);
 
   Serial.print("Tension pin33: ");
   Serial.print(tension_mesure);
   Serial.println(" V");
-    Serial.print("Tension mesurée : ");
+
+  Serial.print("Tension mesurée : ");
   Serial.print(tension_moteur);
   Serial.println(" V");
   Serial.println();
 
-  delay(500);
+  // Affichage sur TM1637 (ex: 1.23V → affiche 123)
+  int valeurAffichee = (int)(tension_moteur * 100); // 2 chiffre après la virgule
+  
+  if (tension_moteur > 13.0) {
+    // Clignotement : alterne affichage / extinction
+    display.clear();
+    delay(250);
+    display.showNumberDecEx(valeurAffichee, 0b01000000, true); // Affiche avec point décimal entre digit 2 et 3
+    delay(250);
+  } else {
+    // Affichage normal
+    display.showNumberDecEx(valeurAffichee, 0b01000000, true); // Affiche avec point décimal entre digit 2 et 3
+    delay(500);
+  }
+  
 }
