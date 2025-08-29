@@ -26,7 +26,7 @@ int rawValue = 0;
 float tension_moteur = 0.00;
 
 float corrigerTension(float tension_lue) {
-  return 1.016 * tension_lue + 0.71;
+  return 1.016 * tension_lue + 0.72;
 }
 
 void setup() {
