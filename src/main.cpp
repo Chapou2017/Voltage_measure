@@ -32,10 +32,12 @@ float corrigerTension(float tension_lue) {
 void setup() {
   Serial.begin(115200);
   analogReadResolution(12);
-  display.setBrightness(7); // Luminosité max (0 à 7)
+  display.setBrightness(2); // Luminosité max (0 à 7)
+   
 }
 
 void loop() {
+  
   rawValue = analogRead(analogPin);
   tension_mesure = (rawValue / 4095.0) * 3.3;
   tension_moteur = tension_mesure * ((R1 + R2) / R2);
@@ -53,15 +55,20 @@ void loop() {
   // Affichage sur TM1637 (ex: 1.23V → affiche 123)
   int valeurAffichee = (int)(tension_moteur * 100); // 2 chiffre après la virgule
   
-  if (tension_moteur > 13.0) {
+  Serial.print("Valeur affichée : ");
+  Serial.print(valeurAffichee);
+  Serial.println(" V");
+  Serial.println();
+
+  if (tension_moteur > 11.5) {
     // Clignotement : alterne affichage / extinction
     display.clear();
     delay(250);
-    display.showNumberDecEx(valeurAffichee, 0b01000000, true); // Affiche avec point décimal entre digit 2 et 3
+    display.showNumberDecEx(valeurAffichee, 0b01000000, false); // Affiche avec point décimal entre digit 2 et 3
     delay(250);
   } else {
     // Affichage normal
-    display.showNumberDecEx(valeurAffichee, 0b01000000, true); // Affiche avec point décimal entre digit 2 et 3
+    display.showNumberDecEx(valeurAffichee, 0b01000000, false); // Affiche avec point décimal entre digit 2 et 3
     delay(500);
   }
   
